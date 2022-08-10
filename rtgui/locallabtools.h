@@ -58,6 +58,7 @@ protected:
 
     // LocallabTool parameters
     bool needMode;
+    bool needModereti;
     bool isLocActivated;
     const Glib::ustring *spotNameSource;
     LocallabToolListener* locToolListener;
@@ -74,7 +75,7 @@ protected:
 
 public:
     // Locallab tool constructor/destructor
-    LocallabTool(Gtk::Box* content, Glib::ustring toolName, Glib::ustring UILabel, bool need11 = false, bool needMode = true);
+    LocallabTool(Gtk::Box* content, Glib::ustring toolName, Glib::ustring UILabel, bool need11 = false, bool needMode = true, bool needModereti = false);
     virtual ~LocallabTool();
 
     // Getter for Locallab tool expander

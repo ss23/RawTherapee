@@ -789,7 +789,7 @@ void LocallabTone::enatmMaskaftChanged()
 
 /* ==== LocallabRetinex ==== */
 LocallabRetinex::LocallabRetinex():
-    LocallabTool(this, M("TP_LOCALLAB_RET_TOOLNAME"), M("TP_LOCALLAB_RETI"), true),
+    LocallabTool(this, M("TP_LOCALLAB_RET_TOOLNAME"), M("TP_LOCALLAB_RETI"), true, true, true),
 
     // Retinex specific widgets
     dehaFrame(Gtk::manage(new Gtk::Frame(M("TP_LOCALLAB_DEHAFRA")))),

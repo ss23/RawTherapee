@@ -120,11 +120,13 @@ static double blurRadius2Slider(double radius)
 }
 
 /* ==== LocallabTool ==== */
-LocallabTool::LocallabTool(Gtk::Box* content, Glib::ustring toolName, Glib::ustring UILabel, bool need11, bool needMode):
+LocallabTool::LocallabTool(Gtk::Box* content, Glib::ustring toolName, Glib::ustring UILabel, bool need11, bool needMode, bool needModereti):
     ToolPanel(toolName, need11),
 
     // LocallabTool parameters
     needMode(needMode),
+    needModereti(needModereti),
+    
     isLocActivated(false),
     locToolListener(nullptr),
 
@@ -149,9 +151,16 @@ LocallabTool::LocallabTool(Gtk::Box* content, Glib::ustring toolName, Glib::ustr
     RTImage* const removeImage = Gtk::manage(new RTImage("cancel-small.png"));
     removeEvBox->add(*removeImage);
     titleBox->pack_end(*removeEvBox, Gtk::PACK_SHRINK, 1);
-    if (needMode) {
+    if (needMode && needModereti == false) {
         complexity->append(M("TP_LOCALLAB_MODE_EXPERT"));
         complexity->append(M("TP_LOCALLAB_MODE_NORMAL"));
+        complexity->append(M("TP_LOCALLAB_MODE_SIMPLE"));
+        complexity->set_active(2);
+        complexityConn = complexity->signal_changed().connect(sigc::mem_fun(*this, &LocallabTool::complexityModeChanged));
+    }
+    if (needMode && needModereti == true) {
+        complexity->append(M("TP_LOCALLAB_MODE_EXPERT"));
+        complexity->append(M("TP_LOCALLAB_MODE_SIMPLE"));
         complexity->append(M("TP_LOCALLAB_MODE_SIMPLE"));
         complexity->set_active(2);
         complexityConn = complexity->signal_changed().connect(sigc::mem_fun(*this, &LocallabTool::complexityModeChanged));
