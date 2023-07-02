@@ -942,10 +942,16 @@ BENCHFUN
 
                                     for (int j = tileleft; j < tileright; ++j) {
                                         const int j1 = j - tileleft;
-
-                                        const float R_ = Color::denoiseIGammaTab[gain * src->r(i, j)];
-                                        const float G_ = Color::denoiseIGammaTab[gain * src->g(i, j)];
-                                        const float B_ = Color::denoiseIGammaTab[gain * src->b(i, j)];
+                                        float R_, G_, B_;
+                                        if(gam >= 1.7f) {
+                                            R_ = Color::denoiseIGammaTab[gain * src->r(i, j)];
+                                            G_ = Color::denoiseIGammaTab[gain * src->g(i, j)];
+                                            B_ = Color::denoiseIGammaTab[gain * src->b(i, j)];
+                                        } else {
+                                            R_ = Color::igammatab_26_129[gain * src->r(i, j)];//gamma and slope with gamma=2.59 slope=129
+                                            G_ = Color::igammatab_26_129[gain * src->g(i, j)];
+                                            B_ = Color::igammatab_26_129[gain * src->b(i, j)];
+                                        }
 
                                         //apply gamma noise standard (slider)
                                         labdn->L[i1][j1] = R_ < 65535.f ? gamcurve[R_] : Color::gammanf(R_ / 65535.f, gam) * 32768.f;
@@ -1600,9 +1606,15 @@ BENCHFUN
                                             b_ = b_ < 32768.f ? igamcurve[b_] : (Color::gammanf(b_ / 32768.f, igam) * 65535.f);
 
                                             //readapt arbitrary gamma (inverse from beginning)
-                                            r_ = Color::denoiseGammaTab[r_];
-                                            g_ = Color::denoiseGammaTab[g_];
-                                            b_ = Color::denoiseGammaTab[b_];
+                                            if(gam >= 1.7f) {
+                                                r_ = Color::denoiseGammaTab[r_];
+                                                g_ = Color::denoiseGammaTab[g_];
+                                                b_ = Color::denoiseGammaTab[b_];
+                                            } else {
+                                                r_ = Color::gammatab_26_129[r_];//gamma and slope with gamma=2.59 slope=129
+                                                g_ = Color::gammatab_26_129[g_];
+                                                b_ = Color::gammatab_26_129[b_];
+                                            }
 
                                             if (numtiles == 1) {
                                                 dsttmp->r(i, j) = newGain * r_;
@@ -3467,10 +3479,15 @@ void ImProcFunctions::RGB_denoise_info(Imagefloat * src, Imagefloat * provicalc,
                             float R_ = gain * src->r(i, j);
                             float G_ = gain * src->g(i, j);
                             float B_ = gain * src->b(i, j);
-
-                            R_ = Color::denoiseIGammaTab[R_];
-                            G_ = Color::denoiseIGammaTab[G_];
-                            B_ = Color::denoiseIGammaTab[B_];
+                            if(gam >= 1.7f) {
+                                R_ = Color::denoiseIGammaTab[R_];
+                                G_ = Color::denoiseIGammaTab[G_];
+                                B_ = Color::denoiseIGammaTab[B_];
+                            } else {
+                                R_ = Color::igammatab_26_129[R_];//inverse gamma and slope with gamma=2.59 slope=129
+                                G_ = Color::igammatab_26_129[G_];
+                                B_ = Color::igammatab_26_129[B_];
+                            }
 
                             //apply gamma noise standard (slider)
                             R_ = R_ < 65535.f ? gamcurve[R_] : (Color::gammanf(R_ / 65535.f, gam) * 32768.f);

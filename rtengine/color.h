@@ -161,6 +161,8 @@ public:
     static LUTf igammatab_115_2;
     static LUTf gammatab_145_3;
     static LUTf igammatab_145_3;
+    static LUTf gammatab_26_129;
+    static LUTf igammatab_26_129;
 
     // look-up tables for the simple exponential gamma
     static LUTf gammatab;
@@ -1221,6 +1223,24 @@ static inline void Lab2XYZ(vfloat L, vfloat a, vfloat b, vfloat &x, vfloat &y, v
         return x <= 0.031746 ? x / 17.0 : exp(log((x + 0.044445) / 1.044445) * 2.4);
     }
 
+
+    /*
+    * @brief Get the inverse gamma value for Gamma=2.59 Slope=129
+    * @param x red, green or blue channel's value [0 ; 1]
+    * @return the inverse gamma modified's value [0 ; 1]
+    */
+    static inline double igamma26_129    (double x)
+    {
+        return x <= 0.010251 ? x / 129.0 : exp(log((x + 0.01630) / 1.01630) * 2.59);
+      //  return x <= ga2 ? x / ga1 : exp(log((x + ga4) / 1 + ga4) * gamma);//continuous
+    }
+
+
+    static inline double gamma26_129     (double x)
+    {
+        return x <= 0.000079 ? x * 129.0 : 1.0163 * exp(log(x) / 2.59) - 0.0163;
+      //  return x <= ga3 ? x * ga1 : 1+ ga4 * exp(log(x) / gamma) - ga4;//continuous
+    }
 
     /**
     * @brief Get the gamma value for Gamma=2.6 Slope=11

@@ -57,6 +57,8 @@ LUTf Color::gammatab_115_2;
 LUTf Color::igammatab_115_2;
 LUTf Color::gammatab_145_3;
 LUTf Color::igammatab_145_3;
+LUTf Color::gammatab_26_129;
+LUTf Color::igammatab_26_129;
 
 /*
  * Munsell Lch correction
@@ -134,6 +136,8 @@ void Color::init ()
     igammatab_115_2(maxindex, 0);
     gammatab_145_3(maxindex, 0);
     igammatab_145_3(maxindex, 0);
+    gammatab_26_129(maxindex, 0);
+    igammatab_26_129(maxindex, 0);
 
 #ifdef _OPENMP
     #pragma omp parallel sections
@@ -346,6 +350,22 @@ void Color::init ()
 
         for (int i = 0; i < maxindex; i++) {
             igammatab_145_3[i] = 65535.0 * igamma145_3 (i / 65535.0);
+        }
+
+#ifdef _OPENMP
+        #pragma omp section
+#endif
+
+        for (int i = 0; i < maxindex; i++) {
+            gammatab_26_129[i] = 65535.0 * gamma26_129 (i / 65535.0);
+        }
+
+#ifdef _OPENMP
+        #pragma omp section
+#endif
+
+        for (int i = 0; i < maxindex; i++) {
+            igammatab_26_129[i] = 65535.0 * igamma26_129 (i / 65535.0);
         }
 
 #ifdef _OPENMP
