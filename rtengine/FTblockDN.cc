@@ -429,6 +429,16 @@ void ImProcFunctions::Median_Denoise(float **src, float **dst, const int width, 
     do_median_denoise<false>(src, dst, 0.f, width, height, medianType, iterations, numThreads, buffer);
 }
 
+float igammaden(float x, float p, float s, float g2, float g4)
+{
+    return x <= g2 ? x / s : pow_F((x + g4) / (1.f + g4), p);//continuous
+}
+
+float gammaden(float x, float p, float s, float g3, float g4)
+{
+    return x <= g3 ? x * s : (1.f + g4) * xexpf(xlogf(x) / p) - g4;//continuous
+}
+
 
 void ImProcFunctions::Median_Denoise(float **src, float **dst, float upperBound, const int width, const int height, const Median medianType, const int iterations, const int numThreads, float **buffer)
 {
@@ -928,7 +938,12 @@ BENCHFUN
 
                         //fill tile from image; convert RGB to "luma/chroma"
                         const float maxNoiseVarab = max(noisevarab_b, noisevarab_r);
-
+                        float gammalow = 2.59f;//we can change 3, 4, 5.. - be carefull also in RGB_denoise_info
+                        rtengine::GammaValues g_a; //gamma parameters
+                        double pwr = 1.0 / static_cast<double>(gam);//default 3.0 - gamma Lab
+                        double ts = 129.f;//we can change 50, 100, 200 - be carefull also in RGB_denoise_info
+                        rtengine::Color::calcGamma(pwr, ts, g_a); // call to calcGamma with selected gamma and slope
+                       // printf("gain=%f \n", gain);
                         if (isRAW) {//image is raw; use channel differences for chroma channels
 
                             if (!denoiseMethodRgb) { //lab mode
@@ -948,9 +963,13 @@ BENCHFUN
                                             G_ = Color::denoiseIGammaTab[gain * src->g(i, j)];
                                             B_ = Color::denoiseIGammaTab[gain * src->b(i, j)];
                                         } else {
-                                            R_ = Color::igammatab_26_129[gain * src->r(i, j)];//gamma and slope with gamma=2.59 slope=129
-                                            G_ = Color::igammatab_26_129[gain * src->g(i, j)];
-                                            B_ = Color::igammatab_26_129[gain * src->b(i, j)];
+                                            R_ = 65535.f * igammaden(gain * src->r(i, j) / 65535.f, gammalow, ts, g_a[2], g_a[4]);
+                                            G_ = 65535.f * igammaden(gain * src->g(i, j)/ 65535.f, gammalow, ts, g_a[2], g_a[4]);
+                                            B_ = 65535.f * igammaden(gain * src->b(i, j)/ 65535.f, gammalow, ts, g_a[2], g_a[4]);
+                                                                                     
+                                           // R_ = Color::igammatab_26_129[gain * src->r(i, j)];//gamma and slope with gamma=2.59 slope=129
+                                           // G_ = Color::igammatab_26_129[gain * src->g(i, j)];
+                                           // B_ = Color::igammatab_26_129[gain * src->b(i, j)];
                                         }
 
                                         //apply gamma noise standard (slider)
@@ -1611,9 +1630,12 @@ BENCHFUN
                                                 g_ = Color::denoiseGammaTab[g_];
                                                 b_ = Color::denoiseGammaTab[b_];
                                             } else {
-                                                r_ = Color::gammatab_26_129[r_];//gamma and slope with gamma=2.59 slope=129
-                                                g_ = Color::gammatab_26_129[g_];
-                                                b_ = Color::gammatab_26_129[b_];
+                                                r_ = 65536.f * gammaden(r_ / 65535.f, gammalow, ts, g_a[3], g_a[4]);
+                                                g_ = 65536.f * gammaden(g_ / 65535.f, gammalow, ts, g_a[3], g_a[4]);
+                                                b_ = 65536.f * gammaden(b_ / 65535.f, gammalow, ts, g_a[3], g_a[4]);
+                                              //  r_ = Color::gammatab_26_129[r_];//gamma and slope with gamma=2.59 slope=129
+                                              //  g_ = Color::gammatab_26_129[g_];
+                                              //  b_ = Color::gammatab_26_129[b_];
                                             }
 
                                             if (numtiles == 1) {
@@ -1633,7 +1655,7 @@ BENCHFUN
                                     #pragma omp parallel for num_threads(denoiseNestedLevels)
 #endif
 
-                                    for (int i = tiletop; i < tilebottom; ++i) {
+                     for (int i = tiletop; i < tilebottom; ++i) {
                                         int i1 = i - tiletop;
 
                                         for (int j = tileleft; j < tileright; ++j) {
@@ -3464,6 +3486,12 @@ void ImProcFunctions::RGB_denoise_info(Imagefloat * src, Imagefloat * provicalc,
                         noisevarlum[i1 >> 1][j1 >> 1] = Llum;
                     }
                 }
+                
+                float gammalow = 2.59f;
+                rtengine::GammaValues g_a; //gamma parameters
+                double pwr = 1.0 / static_cast<double>(gam);//default 3.0 - gamma Lab
+                double ts = 129.f;
+                rtengine::Color::calcGamma(pwr, ts, g_a); // call to calcGamma with selected gamma and slope
 
                 if (!denoiseMethodRgb) { //lab mode, modification Jacques feb 2013 and july 2014
 
@@ -3484,9 +3512,13 @@ void ImProcFunctions::RGB_denoise_info(Imagefloat * src, Imagefloat * provicalc,
                                 G_ = Color::denoiseIGammaTab[G_];
                                 B_ = Color::denoiseIGammaTab[B_];
                             } else {
-                                R_ = Color::igammatab_26_129[R_];//inverse gamma and slope with gamma=2.59 slope=129
-                                G_ = Color::igammatab_26_129[G_];
-                                B_ = Color::igammatab_26_129[B_];
+                                R_ = 65535.f * igammaden(R_ / 65535.f, gammalow, ts, g_a[2], g_a[4]);
+                                G_ = 65535.f * igammaden(G_ / 65535.f, gammalow, ts, g_a[2], g_a[4]);
+                                B_ = 65535.f * igammaden(B_ / 65535.f, gammalow, ts, g_a[2], g_a[4]);
+                                
+                               // R_ = Color::igammatab_26_129[R_];//inverse gamma and slope with gamma=2.59 slope=129
+                               // G_ = Color::igammatab_26_129[G_];
+                               // B_ = Color::igammatab_26_129[B_];
                             }
 
                             //apply gamma noise standard (slider)
