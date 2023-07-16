@@ -5964,6 +5964,8 @@ void RawImageSource::ItcWB(bool extra, double &tempref, double &greenref, double
             siza = 192;//old sampling 5.9 and before...
         }
 
+        int cori[siza];
+
         // tempref and greenref are camera wb values.
         // I used them by default to select good spectral values !! but they are changed after
         tempref = rtengine::min(tempref, 15000.0);
@@ -6667,6 +6669,7 @@ void RawImageSource::ItcWB(bool extra, double &tempref, double &greenref, double
                     float dE = sqrt(SQR(xx_curref_reduc[i][repref] - reff_spect_xx_camera[kN][repref]) + SQR(yy_curref_reduc[i][repref] - reff_spect_yy_camera[kN][repref]));
                     dEmean += dE;
                     ndEmean++;
+                    cori[i] = kN;
 
                     if (nn_curref_reduc[i][repref] < minhist) {
                         minhist = nn_curref_reduc[i][repref];
@@ -6852,6 +6855,7 @@ void RawImageSource::ItcWB(bool extra, double &tempref, double &greenref, double
 
             for (int gr = Rangegreenused.begin; gr < Rangegreenused.end; ++gr) {
                 float minstudgr = 100000.f;
+                float minde = 100000.f;
                 goodrefgr = 1;
 
                 for (int tt = scantempbeg; tt < scantempend; ++tt) {
@@ -6880,7 +6884,8 @@ void RawImageSource::ItcWB(bool extra, double &tempref, double &greenref, double
                     bmm[tt] = bm / gm;
                 }
 
-
+                float mde = 0.f;
+                int nde = 0;
                 for (int tt = scantempbeg; tt < scantempend; ++tt) {//N_t
                     for (int i = 0; i < w; ++i) {
                         float unused;
@@ -6897,7 +6902,14 @@ void RawImageSource::ItcWB(bool extra, double &tempref, double &greenref, double
                         reff_spect_xxyy_prov[2 * j][tt] = std::max(Tx[j][tt] / (Tx[j][tt] + Ty[j][tt] +  Tz[j][tt]), 0.01f); // x from xyY
                         reff_spect_xxyy_prov[2 * j + 1][tt] = std::max(Ty[j][tt] / (Tx[j][tt] + Ty[j][tt] +  Tz[j][tt]), 0.01f); // y from xyY
                     }
-
+ 
+                    for (int i = 0; i < w; ++i) {//calculate deltaE
+                        int kN = cori[i];
+                        float dE = sqrt(SQR(xxyycurr_reduc[2 * i][tt] - reff_spect_xxyy_prov[2 * kN][tt]) + SQR(xxyycurr_reduc[2 * i + 1][tt] - reff_spect_xxyy_prov[2 * kN + 1][tt]));
+                        mde += dE;
+                        nde++;
+                    }
+                    
                     int kkg = -1;
 
                     for (int i = 0; i < Ncr ; ++i) {
@@ -6909,18 +6921,27 @@ void RawImageSource::ItcWB(bool extra, double &tempref, double &greenref, double
                     }
 
                     //now we have good spectral data
+                    mde /= nde;
                     //calculate student correlation
-                    const float abstudgr = std::fabs(studentXY(xxyycurr_reduc, reff_spect_xxyy, 2 * w, 2 * (kkg + 1), tt));
-
-                    if (abstudgr < minstudgr) {  // find the minimum Student
-                        minstudgr = abstudgr;
-                        goodrefgr = tt;
+                    if(! wbpar.itcwb_del) {
+                        const float abstudgr = std::fabs(studentXY(xxyycurr_reduc, reff_spect_xxyy, 2 * w, 2 * (kkg + 1), tt));
+                       if (abstudgr < minstudgr) {  // find the minimum Student
+                            minstudgr = abstudgr;
+                            goodrefgr = tt;
+                        }
+                    } else {
+                        if (mde < minde) {  // find the minimum Student
+                            minde = mde;
+                            goodrefgr = tt;
+                        }
                     }
-
                     //found the values
                     Tgstud[gr].tempref = goodrefgr;
                     Tgstud[gr].greenref = gr;
                     Tgstud[gr].student = minstudgr;
+                    if(wbpar.itcwb_del) {
+                        Tgstud[gr].student = minde;
+                    }
 
                 }
             }

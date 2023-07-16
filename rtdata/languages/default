@@ -1541,6 +1541,7 @@ HISTORY_MSG_WBITC_SAMPLING;Low sampling
 HISTORY_MSG_WBITC_THRES;Itcwb Theshold
 HISTORY_MSG_WBITC_NOPURPLE;Itcwb Nopurple
 HISTORY_MSG_WBITC_PRIM;Primaries
+HISTORY_MSG_WBITC_DEL;DeltaE instead Student
 HISTORY_MSG_WBITC_SORTED;Itcwb ponderated
 HISTORY_MSG_WBITC_FORCE;Itcwb Force
 HISTORY_MSG_WBITC_SIZE;Itcwb Size
@@ -4149,6 +4150,7 @@ TP_WBALANCE_ITCWB_NOPURPLE;Filter on purple color
 //TP_WBALANCE_ITCWBNOPURPLE_TOOLTIP;By default when "Inpaint opposed" is activated, purple colors are not taken into account. However, if the image does not need highlight reconstruction, or if this image naturally contains purple tints (flowers, etc.), it may be necessary to deactivate, to take into account all the colors.
 TP_WBALANCE_ITCWBNOPURPLE_TOOLTIP;Allows you to filter magenta/purple data from the image. If the box is checked a filter limiting the value of Y is applied. By default this value is 0.4. You can change it in 'options' Itcwb_Ypurple (Maximum 1)
 TP_WBALANCE_ITCWB_ALG;Remove 2 pass algorithm
+TP_WBALANCE_ITCWB_DEL;Uses deltaE instead Student
 TP_WBALANCE_ITCWB_CUSTOM;Use Custom temperature & tint
 TP_WBALANCE_ITCWCUSTOM_TOOLTIP;Allows you to use Custom settings Temperature and Green (tint).\n\nUsage tips:\n1) start Itcwb , enable 'Use Custom temperature and tint'.\n2) Set 'Temperature and tint' to your liking :free, Pick,...(Custom)\n3) go back to 'Temperature correlation'.\n\nYou cannot use : 2 passes, AWB temperature bias, Green refinement.
 TP_WBALANCE_ITCWALG_TOOLTIP;Allows you to switch to the other Alternative temperature (Alt_temp), when possible.\nInactive in the "single choice" case.

@@ -271,6 +271,7 @@ void ParamsEdited::set(bool v)
     wb.itcwb_rgreen                = v;
     wb.itcwb_nopurple             = v;
     wb.itcwb_alg             = v;
+    wb.itcwb_del             = v;
     wb.itcwb_prim                = v;
     wb.itcwb_sampling         = v;
     //colorShift.a               = v;
@@ -984,6 +985,7 @@ void ParamsEdited::initFrom(const std::vector<rtengine::procparams::ProcParams>&
         wb.itcwb_rgreen = wb.itcwb_rgreen && p.wb.itcwb_rgreen == other.wb.itcwb_rgreen;
         wb.itcwb_nopurple = wb.itcwb_nopurple && p.wb.itcwb_nopurple == other.wb.itcwb_nopurple;
         wb.itcwb_alg = wb.itcwb_alg && p.wb.itcwb_alg == other.wb.itcwb_alg;
+        wb.itcwb_del = wb.itcwb_del && p.wb.itcwb_del == other.wb.itcwb_del;
         wb.itcwb_prim = wb.itcwb_prim && p.wb.itcwb_prim == other.wb.itcwb_prim;
         wb.itcwb_sampling = wb.itcwb_sampling && p.wb.itcwb_sampling == other.wb.itcwb_sampling;
         //colorShift.a = colorShift.a && p.colorShift.a == other.colorShift.a;
@@ -2874,6 +2876,10 @@ void ParamsEdited::combine(rtengine::procparams::ProcParams& toEdit, const rteng
 
     if (wb.itcwb_alg) {
         toEdit.wb.itcwb_alg = mods.wb.itcwb_alg;
+    }
+
+    if (wb.itcwb_del) {
+        toEdit.wb.itcwb_del = mods.wb.itcwb_del;
     }
 
     if (wb.itcwb_prim) {

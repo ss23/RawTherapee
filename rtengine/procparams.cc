@@ -1391,6 +1391,7 @@ WBParams::WBParams() :
     itcwb_rgreen(1),//keep for settings 
     itcwb_nopurple(false),//keep for settings
     itcwb_alg(false),//checkbox
+    itcwb_del(false),//checkbox
     itcwb_prim("beta"),//combobox
     itcwb_sampling(false)//keep for 5.9 and for settings
 
@@ -1417,6 +1418,7 @@ bool WBParams::isPanningRelatedChange(const WBParams& other) const
                 && itcwb_green == other.itcwb_green
                 && itcwb_prim == other.itcwb_prim
                 && itcwb_alg == other.itcwb_alg
+                && itcwb_del == other.itcwb_del
 
             )
         )
@@ -1437,6 +1439,7 @@ bool WBParams::operator ==(const WBParams& other) const
         && itcwb_rgreen == other.itcwb_rgreen
         && itcwb_nopurple == other.itcwb_nopurple
         && itcwb_alg == other.itcwb_alg
+        && itcwb_del == other.itcwb_del
         && itcwb_prim == other.itcwb_prim
         && itcwb_sampling == other.itcwb_sampling;
 
@@ -6216,6 +6219,7 @@ int ProcParams::save(const Glib::ustring& fname, const Glib::ustring& fname2, bo
         saveToKeyfile(!pedited || pedited->wb.itcwb_rgreen, "White Balance", "Itcwb_rangegreen", wb.itcwb_rgreen, keyFile);
         saveToKeyfile(!pedited || pedited->wb.itcwb_nopurple, "White Balance", "Itcwb_nopurple", wb.itcwb_nopurple, keyFile);
         saveToKeyfile(!pedited || pedited->wb.itcwb_alg, "White Balance", "Itcwb_alg", wb.itcwb_alg, keyFile);
+        saveToKeyfile(!pedited || pedited->wb.itcwb_del, "White Balance", "Itcwb_del", wb.itcwb_del, keyFile);
         saveToKeyfile(!pedited || pedited->wb.itcwb_prim, "White Balance", "Itcwb_prim", wb.itcwb_prim, keyFile);
         saveToKeyfile(!pedited || pedited->wb.itcwb_sampling, "White Balance", "Itcwb_sampling", wb.itcwb_sampling, keyFile);
 
@@ -8191,6 +8195,7 @@ int ProcParams::load(const Glib::ustring& fname, ParamsEdited* pedited)
             assignFromKeyfile(keyFile, "White Balance", "Itcwb_rangegreen", pedited, wb.itcwb_rgreen, pedited->wb.itcwb_rgreen);
             assignFromKeyfile(keyFile, "White Balance", "Itcwb_nopurple", pedited, wb.itcwb_nopurple, pedited->wb.itcwb_nopurple);
             assignFromKeyfile(keyFile, "White Balance", "Itcwb_alg", pedited, wb.itcwb_alg, pedited->wb.itcwb_alg);
+            assignFromKeyfile(keyFile, "White Balance", "Itcwb_del", pedited, wb.itcwb_del, pedited->wb.itcwb_del);
             assignFromKeyfile(keyFile, "White Balance", "Itcwb_prim", pedited, wb.itcwb_prim, pedited->wb.itcwb_prim);
             if (ppVersion <= 349) { // 5.9 and earlier.
                 wb.itcwb_sampling = true;

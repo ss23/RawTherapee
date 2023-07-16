@@ -252,6 +252,7 @@ struct WBParamsEdited {
     bool itcwb_rgreen;
     bool itcwb_nopurple;
     bool itcwb_alg;
+    bool itcwb_del;
     bool itcwb_prim;
     bool itcwb_sampling;
     bool itcwb_green;
