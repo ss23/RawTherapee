@@ -6774,9 +6774,12 @@ void RawImageSource::ItcWB(bool extra, double &tempref, double &greenref, double
 
         float minstud = 100000.f;
         int goodref = 1;
+        float minde0 = 100000.f;
 
 //calculate  x y z for each pixel with multiplier rmm gmm bmm
-
+        float mde0 = 0.f;
+        int nde0 = 0;
+        //first test Student / deltaE to find goodref with green original
         for (int tt = ttbeg; tt < ttend; ++tt) {//N_t
             for (int i = 0; i < w; ++i) {
                 float unused;
@@ -6792,6 +6795,13 @@ void RawImageSource::ItcWB(bool extra, double &tempref, double &greenref, double
                 reff_spect_xxyy_prov[2 * j + 1][tt] = std::max(Ty[j][tt] / (Tx[j][tt] + Ty[j][tt] +  Tz[j][tt]), 0.01f); // y from xyY
             }
 
+            for (int i = 0; i < w; ++i) {//calculate deltaE
+                int kN = cori[i];
+                float dE = sqrt(SQR(xxyycurr_reduc[2 * i][tt] - reff_spect_xxyy_prov[2 * kN][tt]) + SQR(xxyycurr_reduc[2 * i + 1][tt] - reff_spect_xxyy_prov[2 * kN + 1][tt]));
+                mde0 += dE;
+                nde0++;
+            }
+
             int kk = -1;
 
             for (int i = 0; i < Ncr ; ++i) {
@@ -6802,15 +6812,21 @@ void RawImageSource::ItcWB(bool extra, double &tempref, double &greenref, double
                     reff_spect_xxyy[2 * kk + 1][tt] = reff_spect_xxyy_prov[2 * i + 1][tt];
                 }
             }
-
-            const float abstud = std::fabs(studentXY(xxyycurr_reduc, reff_spect_xxyy, 2 * w, 2 * (kk + 1), tt));
-
-            if (abstud < minstud) {  // find the minimum Student
-                minstud = abstud;
-                goodref = tt;
+            mde0 /= nde0;//deltaE
+            //calculate student correlation
+            if(! wbpar.itcwb_del) {
+               const float abstud = std::fabs(studentXY(xxyycurr_reduc, reff_spect_xxyy, 2 * w, 2 * (kk + 1), tt));
+               if (abstud < minstud) {  // find the minimum Student
+                    minstud = abstud;
+                    goodref = tt;
+                } 
+            } else {
+                if (mde0 < minde0) {  // find min deltaE
+                    minde0 = mde0;
+                    goodref = tt;
+                }
             }
         }
-
         t6.set();
 
         if (settings->verbose) {
@@ -6921,11 +6937,11 @@ void RawImageSource::ItcWB(bool extra, double &tempref, double &greenref, double
                     }
 
                     //now we have good spectral data
-                    mde /= nde;
+                    mde /= nde;//deltaE
                     //calculate student correlation
                     if(! wbpar.itcwb_del) {
                         const float abstudgr = std::fabs(studentXY(xxyycurr_reduc, reff_spect_xxyy, 2 * w, 2 * (kkg + 1), tt));
-                       if (abstudgr < minstudgr) {  // find the minimum Student
+                        if (abstudgr < minstudgr) {  // find the minimum Student
                             minstudgr = abstudgr;
                             goodrefgr = tt;
                         }
@@ -6938,9 +6954,10 @@ void RawImageSource::ItcWB(bool extra, double &tempref, double &greenref, double
                     //found the values
                     Tgstud[gr].tempref = goodrefgr;
                     Tgstud[gr].greenref = gr;
-                    Tgstud[gr].student = minstudgr;
-                    if(wbpar.itcwb_del) {
-                        Tgstud[gr].student = minde;
+                    if(!wbpar.itcwb_del) {
+                        Tgstud[gr].student = minstudgr;//student
+                    } else {
+                        Tgstud[gr].student = minde;//deltaE
                     }
 
                 }
@@ -6989,6 +7006,11 @@ void RawImageSource::ItcWB(bool extra, double &tempref, double &greenref, double
                 int greengood = 55;
 
                 int maxkgood = 3;//default 3 - we can change ...to test 2, 4, 5, 6. High values perhaps less good student, but it is a compromise...
+                if(!wbpar.itcwb_del) {
+                    maxkgood = 3;//Student
+                } else {
+                    maxkgood = 2;//perhaps for deltaE it's better ??
+                }
                 maxkgood = rtengine::LIM(maxkgood, 1, 6);// 2 6
 
                 if (oldsampling == true) {
