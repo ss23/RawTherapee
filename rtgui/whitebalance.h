@@ -69,7 +69,6 @@ protected:
     rtengine::ProcEvent EvWBitcwbprim;
     rtengine::ProcEvent EvWBitcwbalg;
     rtengine::ProcEvent EvWBitcwgreen;
-    rtengine::ProcEvent EvWBitcwsampling;
     rtengine::ProcEvent EvWBitcwbdel;
 
     static Glib::RefPtr<Gdk::Pixbuf> wbPixbufs[rtengine::toUnderlying(rtengine::procparams::WBEntry::Type::CUSTOM) + 1];
@@ -87,12 +86,10 @@ protected:
     Gtk::CheckButton* itcwb_alg;
     Gtk::CheckButton* itcwb_del;
     
-    Gtk::CheckButton* itcwb_sampling;
     MyComboBoxText* itcwb_prim;
     Adjuster* itcwb_green;
     
     bool lastitcwb_alg;
-    bool lastitcwb_sampling;
     bool lastitcwb_del;
 
     Gtk::Button* spotbutton;
@@ -101,7 +98,7 @@ protected:
     double nextGreen;
     WBProvider *wbp;  // pointer to a ToolPanelCoordinator object, or its subclass BatchToolPanelCoordinator
     SpotWBListener* wblistener;
-    sigc::connection methconn, itcwb_algconn, itcwb_delconn, itcwb_samplingconn, itcwb_primconn;
+    sigc::connection methconn, itcwb_algconn, itcwb_delconn, itcwb_primconn;
     int custom_temp;
     double custom_green;
     double custom_equal;
@@ -149,12 +146,10 @@ public:
     }
     void setWB (int temp, double green);
     void resetWB ();
-    void WBChanged           (int met, double temp, double green, double rw, double gw, double bw, float temp0, float delta, int bia, int dread, float studgood, float minchrom, int kmin, float histmin, float histmax, bool sampling) override;
+    void WBChanged           (int met, double temp, double green, double rw, double gw, double bw, float temp0, float delta, int bia, int dread, float studgood, float minchrom, int kmin, float histmin, float histmax) override;
     void itcwb_alg_toggled ();
     void itcwb_del_toggled ();
     void itcwb_prim_changed ();
-    void itcwb_sampling_toggled ();
-
     void setAdjusterBehavior (bool tempadd, bool greenadd, bool equaladd, bool tempbiasadd);
     void trimValues          (rtengine::procparams::ProcParams* pp) override;
     void enabledChanged() override;
